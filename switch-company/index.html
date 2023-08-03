@@ -1,0 +1,223 @@
+<!-- 
+https://lucide.dev/icons/
+https://getcssscan.com/css-box-shadow-examples
+https://tailwindcss.com/docs/background-color
+-->
+<html>
+
+<head>
+  <script src="./index.js" defer></script>
+  <link rel="stylesheet" type="text/css" href="./index.css">
+</head>
+
+<body>
+
+
+  <button onclick="window._onix_debug.openSwitchCompanyDialog()" class="odbg-btn primary odbg-tooltip">
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      class="lucide lucide-arrow-right-left">
+      <path d="m16 3 4 4-4 4" />
+      <path d="M20 7H4" />
+      <path d="m8 21-4-4 4-4" />
+      <path d="M4 17h16" />
+    </svg>
+    <div class="tooltip t-right">
+      Open switch company panel
+    </div>
+  </button>
+
+  <div id="odbg-switch-comp-dialog" class="odbg-dialog" data-open="true">
+    <div class="odbg-dlg-container" data-animation="show">
+      <div class="header">
+        <div class="h-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-building-2">
+            <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
+            <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+            <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
+            <path d="M10 6h4" />
+            <path d="M10 10h4" />
+            <path d="M10 14h4" />
+            <path d="M10 18h4" />
+          </svg>
+          <div class="text">
+            Switch company
+          </div>
+        </div>
+        <div class="h-actions">
+          <button onclick="window._onix_debug.closeDialog('odbg-switch-comp-dialog')"
+            class="odbg-btn outline icon-btn close-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-x">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="content-head">
+          <div class="odbg-group-ctrl">
+            <button class="odbg-btn secondary odbg-tooltip" onclick="window._onix_debug.renderCompanyTable()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="lucide lucide-rotate-ccw">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+              <span class="tooltip">
+                Reload company table
+              </span>
+            </button>
+
+            <button class="odbg-btn secondary odbg-tooltip" onclick="window._onix_debug.clearAllSelectedCompany()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="lucide lucide-eraser">
+                <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21" />
+                <path d="M22 21H7" />
+                <path d="m5 11 9 9" />
+              </svg>
+              <span class="tooltip">
+                Clear selected company
+              </span>
+            </button>
+          </div>
+        </div>
+        <table class="odbg-table" id="odbg-company-data-table">
+          <thead>
+            <tr>
+              <th class="selection">&nbsp;</th>
+              <th class="id">Company ID</th>
+              <th class="alias">Alias</d>
+              <th class="actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="selection"></td>
+              <td></td>
+              <td></td>
+              <td class="actions"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="footer">
+        <div class="text-field-group">
+          <input type="text" id="edit-company-id" placeholder="Company ID" class="odbg-tf" />
+          <input type="text" id="edit-company-alias" placeholder="Company alias" class="odbg-tf" />
+        </div>
+        <div class="odbg-group-ctrl">
+          <button class="odbg-btn primary odbg-tooltip" onclick="" data-update id="odbg-save-btn">
+            <svg data-update-icon xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-save">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
+            </svg>
+            <span class="tooltip">Save</span>
+
+            <svg data-add-icon xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-plus">
+              <path d="M5 12h14" />
+              <path d="M12 5v14" />
+            </svg>
+            <span class="tooltip">Add new</span>
+          </button>
+          <!-- <button class="odbg-btn odbg-tooltip" onclick="window._onix_debug.addCompany()">
+            
+          </button> -->
+          <button class="odbg-btn odbg-tooltip">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-file-edit">
+              <path d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-5.5" />
+              <polyline points="14 2 14 8 20 8" />
+              <path d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l.99-3.95 5.43-5.44Z" />
+            </svg>
+            <span class="tooltip">Auto fill</span>
+          </button>
+          <button class="odbg-btn danger odbg-tooltip" onclick="window._onix_debug.deleteSelectedCompany()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-trash-2">
+              <path d="M3 6h18" />
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+              <line x1="10" x2="10" y1="11" y2="17" />
+              <line x1="14" x2="14" y1="11" y2="17" />
+            </svg>
+            <div class="tooltip">Delete</div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="odbg-message" class="odbg-dialog" data-open="false">
+    <div class="odbg-dlg-container" data-animation="hidden">
+      <div class="header">
+        <div class="h-title">Message</div>
+        <div class="h-actions">
+          <button onclick="window._onix_debug.closeMessageBox()" class="odbg-btn outline icon-btn close-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-x">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="odbg-message-content"></div>
+      </div>
+      <div class="footer">
+        <button class="odbg-btn primary odbg-tooltip" onclick="window._onix_debug.closeMessageBox()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-check-circle">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+          OK
+        </button>
+
+        <button class="odbg-btn secondary odbg-tooltip close-all-btn" onclick="window._onix_debug.closeMessageBox()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-x-circle">
+            <circle cx="12" cy="12" r="10" />
+            <path d="m15 9-6 6" />
+            <path d="m9 9 6 6" />
+          </svg>
+          Close all
+        </button>
+      </div>
+    </div>
+
+    <div class="odbg-dlg-container odbg-spinner" data-animation="hidden" data-component="spinner">
+      <div class="content odbg-spinner-actual">
+        <div class="lds-roller">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>
