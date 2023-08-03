@@ -47,8 +47,7 @@ https://tailwindcss.com/docs/background-color
           </div>
         </div>
         <div class="h-actions">
-          <button onclick="window._onix_debug.closeDialog('odbg-switch-comp-dialog')"
-            class="odbg-btn outline icon-btn close-btn">
+          <button onclick="window._onix_debug.closeSwitchCompanyDialog()" class="odbg-btn outline icon-btn close-btn">
             <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
               class="lucide lucide-x">
@@ -76,10 +75,10 @@ https://tailwindcss.com/docs/background-color
             <button class="odbg-btn secondary odbg-tooltip" onclick="window._onix_debug.clearAllSelectedCompany()">
               <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                class="lucide lucide-eraser">
-                <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21" />
-                <path d="M22 21H7" />
-                <path d="m5 11 9 9" />
+                class="lucide lucide-x-octagon">
+                <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2" />
+                <path d="m15 9-6 6" />
+                <path d="m9 9 6 6" />
               </svg>
               <span class="tooltip">
                 Clear selected company
@@ -112,28 +111,38 @@ https://tailwindcss.com/docs/background-color
           <input type="text" id="edit-company-alias" placeholder="Company alias" class="odbg-tf" />
         </div>
         <div class="odbg-group-ctrl">
-          <button class="odbg-btn primary odbg-tooltip" onclick="" data-update id="odbg-save-btn">
-            <svg data-update-icon xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          <button class="odbg-btn primary odbg-tooltip" onclick="_onix_debug.saveCompany()" data-mode="add"
+            id="odbg-save-comp-info-btn">
+            <svg data-update xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
               class="lucide lucide-save">
               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
               <polyline points="17 21 17 13 7 13 7 21" />
               <polyline points="7 3 7 8 15 8" />
             </svg>
-            <span class="tooltip">Save</span>
+            <span data-update class="tooltip">Update</span>
 
-            <svg data-add-icon xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            <svg data-add xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
               class="lucide lucide-plus">
               <path d="M5 12h14" />
               <path d="M12 5v14" />
             </svg>
-            <span class="tooltip">Add new</span>
+            <span data-add class="tooltip">Add new</span>
           </button>
-          <!-- <button class="odbg-btn odbg-tooltip" onclick="window._onix_debug.addCompany()">
-            
-          </button> -->
-          <button class="odbg-btn odbg-tooltip">
+
+          <button class="odbg-btn odbg-tooltip" onclick="_onix_debug.setCompanyInput('', '')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-eraser">
+              <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21" />
+              <path d="M22 21H7" />
+              <path d="m5 11 9 9" />
+            </svg>
+            <span class="tooltip">Clear inputs</span>
+          </button>
+
+          <button class="odbg-btn odbg-tooltip" onclick="_onix_debug.autoFillCompanyInfo()">
             <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
               class="lucide lucide-file-edit">
@@ -189,7 +198,7 @@ https://tailwindcss.com/docs/background-color
           OK
         </button>
 
-        <button class="odbg-btn secondary odbg-tooltip close-all-btn" onclick="window._onix_debug.closeMessageBox()">
+        <button class="odbg-btn secondary odbg-tooltip close-all-btn" onclick="window._onix_debug.closeAllDialog()">
           <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
             class="lucide lucide-x-circle">

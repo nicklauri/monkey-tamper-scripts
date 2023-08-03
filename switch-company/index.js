@@ -98,6 +98,12 @@ window._onix_debug = {
   async closeDialog(id, options = {}) {
     return await this.openDialog(id, false, options)
   },
+  async closeSwitchCompanyDialog(options = {}) {
+    return await this.closeDialog(this.switchCompanyDialogId)
+  },
+  async closeAllDialog() {
+    return await Promise.all([this.closeMessageBox(), this.closeSwitchCompanyDialog()])
+  },
   msgBoxId: "odbg-message",
   /**
    * @param {string} msg Messagebox body message.
@@ -112,7 +118,7 @@ window._onix_debug = {
       return
     }
 
-    msgBoxEl.dataset.closeAllBtn = options.displayCloseAllBtn
+    msgBoxEl.dataset.closeAllBtn = !!options.displayCloseAllBtn
 
     const msgBoxTitle = msgBoxEl.querySelector(".odbg-dlg-container>.header>.h-title")
     if (msgBoxTitle) {
@@ -147,22 +153,6 @@ window._onix_debug = {
   },
   async setSpinnerOpen(open = true) {
     return this.openDialog(this.msgBoxId, open, { spinner: true })
-  },
-  toggleReloadCurrentPage(event) {
-    if (event) {
-      event.stopPropagation()
-      event.preventDefault()
-    }
-
-    const elId = "reload-current-page-checkbox"
-    const el = document.getElementById(elId)
-    if (!el) {
-      l(`can't find elId: ${elId}`)
-      return
-    }
-
-    el.classList.toggle("checked")
-    this.isReloadCurrentPage = el.classList.contains("checked")
   },
   renderCompanyTable() {
     const tableBody = this.tableBody
@@ -211,8 +201,17 @@ window._onix_debug = {
   </tr>`
 
     tableBody.innerHTML = compList.map(formatOne).join("\n")
+    this.updateSaveButtonContent()
   },
-  isReloadCurrentPage: false,
+  updateSaveButtonContent() {
+    const el = document.getElementById("odbg-save-comp-info-btn")
+    if (!el) {
+      l(`could not find save button element: #odbg-save-comp-info-btn`)
+      return
+    }
+
+    el.dataset.mode = !this.currentSelectedIdx && this.currentSelectedIdx !== 0 ? "add" : "update"
+  },
   /** @type { number | null } */
   currentSelectedIdx: null,
   /** @typedef { const } */
@@ -262,6 +261,49 @@ window._onix_debug = {
   clearAllSelectedCompany() {
     this.currentSelectedIdx = null
     this.tableEl?.querySelectorAll(`[data-idx].selected`).forEach((item) => item.classList.remove("selected"))
+    this.updateSaveButtonContent()
+  },
+  async switchToCompanyIdx(event, idx, reloadAfterSwitching = false) {
+    event.stopPropagation()
+    event.preventDefault()
+    const company = this.companyList[idx]
+    if (!company) {
+      this.openMessageBox(`switchToCompanyIdx: could not find index: ${idx}`, "Error")
+      return
+    }
+
+    await this.setSpinnerOpen(true)
+    const result = await this.doSwitchCompany(company)
+
+    const message =
+      result.isOk && !reloadAfterSwitching
+        ? `Switched to company ${company.alias} (ID: ${company.companyId}).`
+        : result.isOk && reloadAfterSwitching
+        ? `Switched to company ${company.alias} (ID: ${company.companyId}).\nReloading current page...`
+        : result.error
+        ? `Could not switch to company ${company.alias} (ID: ${company.companyId}), due to: ${
+            result.error.message || result.error.toString()
+          }`
+        : `Failed to switch to company ${company.alias} (ID: ${company.companyId})`
+
+    const title = result.isOk ? `Success` : `Error`
+
+    await this.openMessageBox(message, title, { displayCloseAllBtn: true })
+
+    if (result.isOk && reloadAfterSwitching) {
+      // DEBUG
+      // await sleepAsync(500)
+      // END DEBUG
+      // await this.closeMessageBox()
+      return
+    }
+  },
+  async switchToCompanyAndReloadCurrentIdx(event, idx) {
+    return await this.switchToCompanyIdx(event, idx, true)
+  },
+  /** @param {CompanyItem[]} list  */
+  saveCompanyList(list) {
+    set("company-list", list)
   },
   /** @param {number} idx */
   selectCompany(idx) {
@@ -275,8 +317,9 @@ window._onix_debug = {
     this.clearAllSelectedCompany()
     this.currentSelectedIdx = company ? idx : null
     this.tableEl?.querySelector(`[data-idx="${this.currentSelectedIdx}"]`)?.classList.add("selected")
+    this.updateSaveButtonContent()
   },
-  deleteCompany(idx) {
+  deleteCompany() {
     this.setCompanyInput("", "")
     this.currentSelectedIdx = null
 
@@ -306,50 +349,8 @@ window._onix_debug = {
 
     this.renderCompanyTable()
   },
-  async switchToCompanyIdx(event, idx, reloadAfterSwitching = false) {
-    event.stopPropagation()
-    event.preventDefault()
-    const company = this.companyList[idx]
-    if (!company) {
-      this.openMessageBox(`switchToCompanyIdx: could not find index: ${idx}`, "Error")
-      return
-    }
-
-    await this.setSpinnerOpen(true)
-    const result = await this.doSwitchCompany(company)
-
-    const message =
-      result.isOk && !reloadAfterSwitching
-        ? `Switched to company ${company.alias} (ID: ${company.companyId}).`
-        : result.isOk && reloadAfterSwitching
-        ? `Switched to company ${company.alias} (ID: ${company.companyId}). Reloading current page...`
-        : result.error
-        ? `Could not switch to company ${company.alias} (ID: ${company.companyId}), due to: ${
-            result.error.message || result.error.toString()
-          }`
-        : `Failed to switch to company ${company.alias} (ID: ${company.companyId})`
-
-    const title = result.isOk ? `Success` : `Error`
-
-    await this.openMessageBox(message, title, { displayCloseAllBtn: true })
-
-    if (result.isOk && reloadAfterSwitching) {
-      // DEBUG
-      // await sleepAsync(500)
-      // END DEBUG
-      // await this.closeMessageBox()
-      return
-    }
-  },
-  async switchToCompanyAndReloadCurrentIdx(event, idx) {
-    return await this.switchToCompanyIdx(event, idx, true)
-  },
-  /** @param {CompanyItem[]} list  */
-  saveCompanyList(list) {
-    set("company-list", list)
-  },
   addCompany() {
-    const companyId = parseInt(this.companyIdInput.value || "")
+    const companyId = Number(this.companyIdInput.value || "")
     const companyAlias = this.companyAliasInput.value
 
     if (!companyId && companyId !== 0) {
@@ -369,6 +370,14 @@ window._onix_debug = {
     this.setCompanyInput("", "")
     this.renderCompanyTable()
   },
+  saveCompany() {
+    if (this.currentSelectedIdx || this.currentSelectedIdx === 0) {
+      this.updateCompany()
+      return
+    }
+
+    this.addCompany()
+  },
   deleteSelectedCompany() {
     const companyList = this.companyList
     const selectedCompany = companyList[this.currentSelectedIdx]
@@ -381,8 +390,14 @@ window._onix_debug = {
     this.saveCompanyList(companyList.filter((item) => item !== selectedCompany))
     this.renderCompanyTable()
   },
+  autoFillCompanyInfo() {
+    const companyId = window.gCommonVariables?.CurrentCompanyId ?? ""
+    const alias = this.decodeHtml(window.gCommonVariables?.CurrentCompanyName ?? "")
+
+    this.setCompanyInput(companyId, alias)
+  },
   switchCompanyUrl: window.gGetUrl("SwitchToCompany", "Home"),
-  /** @return number */
+  /** @param { CompanyItem } companyItem */
   async doSwitchCompany(companyItem) {
     if (!companyItem?.companyId) {
       this.openMessageBox("Please select a company first.", "Error")
@@ -408,6 +423,9 @@ window._onix_debug = {
     }
   },
   decodeHtml(string) {
+    if (!string) {
+      return ""
+    }
     const el = document.createElement("span")
     el.innerHTML = string
     return el.childNodes[0].nodeValue
