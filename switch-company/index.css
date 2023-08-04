@@ -1,12 +1,13 @@
 .odbg-dialog {
   position: fixed;
-  z-index: 1;
+  z-index: 20;
   inset: 0;
+  min-width: 100vw;
+  min-height: 100vh;
   display: grid;
   place-items: center;
   font-family: Inter, sans-serif;
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
+  background-color: hsla(0, 0%, 50%, 0.2);
   color: var(--primary);
 }
 .odbg-dialog > * {
@@ -180,6 +181,8 @@
 }
 .odbg-table tbody tr > td {
   border: 2px solid transparent;
+  padding: 0 !important;
+  text-align: left !important;
 }
 .odbg-table tbody tr > td:first-child {
   border-right: none;
@@ -322,10 +325,16 @@
   color: black;
   border-radius: var(--border-radius);
   width: max-content;
+  background: white;
+  z-index: 1;
 }
 .odbg-tooltip .tooltip.t-right {
   top: 0;
   left: calc(100% + 5px);
+}
+.odbg-tooltip .tooltip.t-bottom {
+  top: auto;
+  bottom: calc(-100% - 5px);
 }
 .odbg-tooltip:hover > .tooltip {
   visibility: visible;
@@ -335,16 +344,17 @@
   box-shadow: var(--btn-shadow);
 }
 
-.odbg-tf {
-  border: var(--border);
-  padding: 4px 5px;
-  font-family: inherit;
-  font-size: 12px;
-  border-radius: 3px;
+input[type=text].odbg-tf, .odbg-tf > input[type=text] {
+  all: unset;
+  border: var(--border) !important;
+  padding: 4px 5px !important;
+  font-family: Inter, sans-serif !important;
+  font-size: 12px !important;
+  border-radius: 3px !important;
 }
-.odbg-tf:focus {
-  outline: 2px solid var(--accent);
-  border-color: transparent;
+input[type=text].odbg-tf:focus, .odbg-tf > input[type=text]:focus {
+  outline: 2px solid var(--accent) !important;
+  border-color: transparent !important;
 }
 
 [class^=odbg-],
@@ -360,8 +370,10 @@
   --btn-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
   --border-radius: 6px;
   --border-radius-row: calc(var(--border-radius) + 2px);
-  --btn-secondary-hover-bg: rgba(0 0 0 / 0.07);
-  --btn-secondary-active-bg: rgba(0 0 0 / 0.1);
+  --btn-secondary-hover-bg: hsl(0, 0%, 90%);
+  --btn-secondary-active-bg: hsl(0, 0%, 80%);
+  --fav-1st: rgb(2 132 199);
+  --fav-2nd: rgb(244 63 94);
   font-family: Inter, sans-serif;
   font-size: 13px;
 }
@@ -373,6 +385,7 @@
 
 [data-open=false] {
   visibility: hidden;
+  opacity: 0;
 }
 
 [data-animation] {
@@ -496,6 +509,22 @@
 
 #odbg-save-comp-info-btn[data-mode=add] > :not([data-add]), #odbg-save-comp-info-btn[data-mode=update] > :not([data-update]) {
   display: none;
+}
+
+#odbg {
+  margin-left: 5px;
+}
+#odbg *:focus-visible {
+  outline: none;
+}
+
+.fav-1st svg.lucide {
+  stroke: var(--fav-1st);
+  fill: var(--fav-1st);
+}
+.fav-2nd svg.lucide {
+  stroke: var(--fav-2nd);
+  fill: var(--fav-2nd);
 }
 
 /*# sourceMappingURL=index.css.map */

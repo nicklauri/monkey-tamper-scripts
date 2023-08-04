@@ -15,8 +15,10 @@ const getOrInit = (item, defaultValue) => {
   return result
 }
 
+set("isDevMode", true)
+
 // DEBUG:
-window.gGetUrl = () => `https://localhost/OnixWork/Home/SwitchToCompany`
+window.gGetUrl ??= () => `https://localhost/OnixWork/Home/SwitchToCompany`
 
 const sleepAsync = (duration) => new Promise((resolve) => setTimeout(() => resolve(), duration))
 
@@ -25,6 +27,7 @@ const sleepAsync = (duration) => new Promise((resolve) => setTimeout(() => resol
  * @typedef {{
  *  open?: boolean,
  *  duration?: number,
+ *  wait?: boolean,
  * }} AnimateElementOptions
  * @typedef {{
  *  spinner?: boolean,
@@ -35,12 +38,55 @@ const sleepAsync = (duration) => new Promise((resolve) => setTimeout(() => resol
  * } & OpenDialogOptions} MessageBoxOptions
  */
 
-window._onix_debug = {
+window.__odbg ||= ({})
+
+window.__odbg.switchComp = {
+  /// Constants.
+  get isDevMode() {
+    return !!get("isDevMode")
+  },
+  /** @type { number | null } */
+  currentSelectedIdx: null,
+  /** @typedef { const } */
+  tableElId: "odbg-company-data-table",
+  msgBoxId: "odbg-message",
+  get companyList() {
+    const testData = [
+      { companyId: 42, alias: "Onix Test Leverandor" },
+      { companyId: 43, alias: "Industrikunden" },
+    ]
+
+    /** @type { CompanyItem[] } */
+    let list = get("company-list") ?? testData ?? []
+    return list
+  },
+  get environmentCompanyInfo() {
+    return {
+      companyId: parseInt(window.gCommonVariables.CurrentCompanyId),
+      alias: this.decodeHtml(window.gCommonVariables.CurrentCompanyName),
+    }
+  },
+  get tableEl() {
+    return document.getElementById(this.tableElId)
+  },
+  get tableBody() {
+    return this.tableEl?.querySelector("tbody")
+  },
+  get companyIdInput() {
+    return document.getElementById("edit-company-id")
+  },
+  get companyAliasInput() {
+    return document.getElementById("edit-company-alias")
+  },
+  get switchCompanyUrl() {
+    return window.gGetUrl("SwitchToCompany", "Home")
+  },
+
   /**
    * @param {HTMLElement} el Element to animate.
    * @param {AnimateElementOptions} param1 Animation options.
    */
-  async animateElement(el, { duration, open } = { open: true }) {
+  async animateElement(el, { duration, open, transitionedDelay: wait } = { open: true }) {
     if (!el) {
       l(`could not animate element: no element was provided.`)
       return
@@ -61,6 +107,8 @@ window._onix_debug = {
 
     el.style.setProperty("--transition-duration", `${transitionedDuration}ms`)
     el.dataset.animation = transitionedState
+
+    wait && await sleepAsync(transitionedDuration)
   },
   /**
    * @param {string} id Dialog HTML element's id.
@@ -73,8 +121,6 @@ window._onix_debug = {
       l(`could not open dialog: invalid dialog id:`, id)
       return
     }
-
-    mainDialogEl.dataset.open = open
 
     const mainDlgContainerSelector = `#${id}>.odbg-dlg-container`
     const animateElSelector = options.spinner
@@ -89,7 +135,9 @@ window._onix_debug = {
 
     options.spinner ? (mainDialogEl.dataset.component = "spinner") : delete mainDialogEl.dataset.component
 
-    return await this.animateElement(animateEl, { ...options, open })
+    await this.animateElement(animateEl, { ...options, open })
+
+    mainDialogEl.dataset.open = open
   },
   /**
    * @param {string} id Dialog HTML element's id.
@@ -99,12 +147,19 @@ window._onix_debug = {
     return await this.openDialog(id, false, options)
   },
   async closeSwitchCompanyDialog(options = {}) {
-    return await this.closeDialog(this.switchCompanyDialogId)
+    return await this.closeDialog(this.switchCompanyDialogId, options)
   },
   async closeAllDialog() {
     return await Promise.all([this.closeMessageBox(), this.closeSwitchCompanyDialog()])
   },
-  msgBoxId: "odbg-message",
+  /**
+   * @param {KeyboardEvent} event 
+   */
+  handleCloseMessageBoxDialogOnEsc(event) {
+    if (event.key !== "Escape") { return }
+
+    __odbg.switchComp.closeMessageBox() 
+  },
   /**
    * @param {string} msg Messagebox body message.
    * @param {string} title Messagebox title.
@@ -130,7 +185,10 @@ window._onix_debug = {
       msgBoxBody.textContent = msg
     }
 
-    return await this.openDialog(id, true, options)
+    document.addEventListener("keyup", this.handleCloseMessageBoxDialogOnEsc, {
+      once: true,
+    })
+    await this.openDialog(id, true, options)
   },
   async closeMessageBox(id, options = {}) {
     id ??= this.msgBoxId
@@ -139,13 +197,14 @@ window._onix_debug = {
       l(`could not find message box element, id:`, id)
       return
     }
+    document.removeEventListener("keyup", this.handleCloseMessageBoxDialogOnEsc)
     return await this.closeDialog(id, options)
   },
   switchCompanyDialogId: "odbg-switch-comp-dialog",
   async openSwitchCompanyDialog() {
     this.clearAllSelectedCompany()
-    this.setCompanyInput("", "")
     this.renderCompanyTable()
+    this.setCompanyInput("", "")
     return await this.openDialog(this.switchCompanyDialogId)
   },
   async closeSwitchCompanyDialog() {
@@ -167,9 +226,8 @@ window._onix_debug = {
       this.currentSelectedIdx >= 0 && index === this.currentSelectedIdx ? "selected" : ""
 
     const formatOne = (item, index) => `
-  <tr class="${rowSelectedClass(index)}" onclick="window._onix_debug.selectCompanyEl(this)" data-company-id="${
-      item.companyId
-    }" data-idx=${index}>
+  <tr class="${rowSelectedClass(index)}" onclick="__odbg.switchComp.selectCompanyEl(this)" data-company-id="${item.companyId
+      }" data-idx=${index}>
     <td class="selection">
       <svg xmlns="http://www.w3.org/2000/svg" class="checkbox-icon" width="1em" height="1em" viewBox="0 0 24 24"
         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -181,7 +239,7 @@ window._onix_debug = {
     <td>${item.alias}</td>
     <td class="actions">
       <div class="odbg-group-ctrl">
-      <button class="odbg-btn primary odbg-tooltip" onclick="window._onix_debug.switchToCompanyIdx(event, ${index})">
+      <button class="odbg-btn primary odbg-tooltip" onclick="__odbg.switchComp.switchToCompanyIdx(event, ${index})">
         <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
           class="lucide lucide-arrow-right-left">
@@ -192,7 +250,7 @@ window._onix_debug = {
         </svg>
         <div class="tooltip">Switch</div>
       </button>
-      <button class="odbg-btn secondary odbg-tooltip" onclick="window._onix_debug.switchToCompanyAndReloadCurrentIdx(event, ${index})">
+      <button class="odbg-btn secondary odbg-tooltip" onclick="__odbg.switchComp.switchToCompanyAndReloadCurrentIdx(event, ${index})">
         <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-dot"><path d="M3 2v6h6"/><path d="M21 12A9 9 0 0 0 6 5.3L3 8"/><path d="M21 22v-6h-6"/><path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"/><circle cx="12" cy="12" r="1"/></svg>
         <div class="tooltip">Switch reload</div>
       </button>
@@ -212,43 +270,11 @@ window._onix_debug = {
 
     el.dataset.mode = !this.currentSelectedIdx && this.currentSelectedIdx !== 0 ? "add" : "update"
   },
-  /** @type { number | null } */
-  currentSelectedIdx: null,
-  /** @typedef { const } */
-  tableElId: "odbg-company-data-table",
-  get tableEl() {
-    return document.getElementById(this.tableElId)
-  },
-  get tableBody() {
-    return this.tableEl?.querySelector("tbody")
-  },
-  get companyIdInput() {
-    return document.getElementById("edit-company-id")
-  },
-  get companyAliasInput() {
-    return document.getElementById("edit-company-alias")
-  },
   setCompanyInput(companyId, alias) {
-    this.companyIdInput.value = companyId
-    this.companyAliasInput.value = alias
+    this.companyIdInput && (this.companyIdInput.value = companyId ?? "")
+    this.companyAliasInput && (this.companyAliasInput.value = alias ?? "")
   },
-  fillCompanyInputUsingEnvironmentVars() {},
-  get companyList() {
-    const testData = [
-      { companyId: 42, alias: "Onix Test Leverandor" },
-      { companyId: 43, alias: "Industrikunden" },
-    ]
-
-    /** @type { CompanyItem[] } */
-    let list = get("company-list") ?? testData ?? []
-    return list
-  },
-  get environmentCompanyInfo() {
-    return {
-      companyId: parseInt(window.gCommonVariables.CurrentCompanyId),
-      alias: this.decodeHtml(window.gCommonVariables.CurrentCompanyName),
-    }
-  },
+  fillCompanyInputUsingEnvironmentVars() { },
   /** @param {string} id */
   getCompanyById(id) {
     return this.companyList.find((item) => item.companyId === id)
@@ -279,12 +305,11 @@ window._onix_debug = {
       result.isOk && !reloadAfterSwitching
         ? `Switched to company ${company.alias} (ID: ${company.companyId}).`
         : result.isOk && reloadAfterSwitching
-        ? `Switched to company ${company.alias} (ID: ${company.companyId}).\nReloading current page...`
-        : result.error
-        ? `Could not switch to company ${company.alias} (ID: ${company.companyId}), due to: ${
-            result.error.message || result.error.toString()
-          }`
-        : `Failed to switch to company ${company.alias} (ID: ${company.companyId})`
+          ? `Switched to company ${company.alias} (ID: ${company.companyId}).\nReloading current page...`
+          : result.error
+            ? `Could not switch to company ${company.alias} (ID: ${company.companyId}), due to: ${result.error.message || result.error.toString()
+            }`
+            : `Failed to switch to company ${company.alias} (ID: ${company.companyId})`
 
     const title = result.isOk ? `Success` : `Error`
 
@@ -292,7 +317,8 @@ window._onix_debug = {
 
     if (result.isOk && reloadAfterSwitching) {
       // DEBUG
-      // await sleepAsync(500)
+      await sleepAsync(500)
+      location = location
       // END DEBUG
       // await this.closeMessageBox()
       return
@@ -396,7 +422,6 @@ window._onix_debug = {
 
     this.setCompanyInput(companyId, alias)
   },
-  switchCompanyUrl: window.gGetUrl("SwitchToCompany", "Home"),
   /** @param { CompanyItem } companyItem */
   async doSwitchCompany(companyItem) {
     if (!companyItem?.companyId) {
@@ -405,11 +430,12 @@ window._onix_debug = {
     }
 
     try {
-      // DEBUG:
-      await sleepAsync(500)
-      return { isOk: true }
+      if (this.isDevMode) {
+        await sleepAsync(500)
+        return { isOk: true }
+      }
 
-      const result = await fetch(this.switchCompanyUrl, {
+      const response = await fetch(this.switchCompanyUrl, {
         method: "POST",
         headers: {
           accept: "application/json",
@@ -417,10 +443,14 @@ window._onix_debug = {
         },
         body: JSON.stringify({ companyId: companyItem.companyId }),
       })
-      return { isOk: !!result.IsSuccessful, redirectTo: result.RedirectTo }
+      const responseJson = await response.json()
+      return { isOk: !!responseJson.IsSuccessful || !responseJson, redirectTo: responseJson.RedirectTo }
     } catch (error) {
       return { isOk: false, error }
     }
+  },
+  async unimplemented() {
+    this.openMessageBox("Unimplemented feature.", "Info")
   },
   decodeHtml(string) {
     if (!string) {
@@ -433,6 +463,6 @@ window._onix_debug = {
 }
 
 setTimeout(() => {
-  window._onix_debug.renderCompanyTable()
-  // window._onix_debug.openMessageBox("Invalid company ID")
+  __odbg.switchComp.renderCompanyTable()
+  // __odbg.switchComp.openMessageBox("Invalid company ID")
 }, 0)
