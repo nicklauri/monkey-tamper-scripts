@@ -322,7 +322,6 @@
   }
 
   &:hover {
-
     &,
     &.outline {
       background-color: var(--btn-secondary-hover-bg);
@@ -346,6 +345,15 @@
 
 .odbg-group-ctrl {
   display: flex;
+  box-shadow: var(--btn-shadow);
+  border-radius: var(--border-radius);
+  width: fit-content;
+  // overflow: hidden;
+
+  >button {
+    box-shadow: none;
+    // border-radius: 0;
+  }
 
   >*:first-child:not(:only-child) {
     border: {
@@ -363,6 +371,15 @@
 
   >*:not(:first-child):not(:last-child) {
     border-radius: 0;
+  }
+
+  >*:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    height: 100%;
+    right: 0;
+    width: 1px;
+    background-color: var(--btn-secondary-hover-bg);
   }
 }
 
