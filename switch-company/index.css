@@ -161,6 +161,10 @@
 .odbg-table thead th.alias {
   width: 200px;
 }
+.odbg-table thead th.actions {
+  display: flex;
+  justify-content: flex-end;
+}
 .odbg-table tbody tr {
   transition: 200ms ease all;
 }

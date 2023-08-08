@@ -197,7 +197,10 @@
         width: 200px;
       }
 
-      // &.actions { width: 110px; }
+      &.actions {
+        display: flex;
+        justify-content: flex-end;
+      }
     }
   }
 
